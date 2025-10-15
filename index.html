@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Trade Quiz</title>
+<style>
+/* (same styles as before, unchanged) */
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📘 Bulk Trade Quiz</div>
+            <div class="subtitle">Test your knowledge of the Bulk Trade platform</div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="quiz-section active start-screen">
+            <h2>Welcome to the Bulk Trade Quiz!</h2>
+            <p>Explore your understanding of Bulk Trade, its APIs, tokens, and core features.</p>
+            <div class="buttons">
+                <button class="btn" onclick="startQuiz()">Start Quiz</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="quiz-section">
+            <div class="question-counter">
+                <span id="current-question">1</span> of <span id="total-questions">10</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="question">
+                <h3 id="question-text"></h3>
+                <div class="options" id="options-container"></div>
+            </div>
+            <div class="feedback" id="feedback"></div>
+            <div class="buttons">
+                <button class="btn" id="next-btn" onclick="nextQuestion()" disabled>Next Question</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="quiz-section results-screen">
+            <h2>Quiz Complete!</h2>
+            <div class="score-circle" id="score-circle">
+                <div id="score-percentage">0%</div>
+                <div class="score-text">Score</div>
+            </div>
+            <div class="results-message" id="results-message"></div>
+            <div class="results-breakdown">
+                <div class="breakdown-item"><span>Correct Answers:</span><strong id="correct-count">0</strong></div>
+                <div class="breakdown-item"><span>Incorrect Answers:</span><strong id="incorrect-count">0</strong></div>
+                <div class="breakdown-item"><span>Total Questions:</span><strong id="total-count">0</strong></div>
+            </div>
+            <div class="buttons">
+                <button class="btn" onclick="restartQuiz()">Take Quiz Again</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+const quizData = [
+    {
+        question: "What is Bulk Trade primarily used for?",
+        options: ["Data storage", "Digital asset trading", "Social networking", "Cloud hosting"],
+        correct: 1
+    },
+    {
+        question: "Which blockchain is Bulk Trade built on?",
+        options: ["Ethereum", "Bitcoin", "Arweave", "Polygon"],
+        correct: 2
+    },
+    {
+        question: "What is the main purpose of the AlphaDocs feature?",
+        options: ["To provide AI-generated documentation for APIs", "To trade bulk data", "To create NFTs", "To manage blockchain nodes"],
+        correct: 0
+    },
+    {
+        question: "What does the Bulk Token represent in the ecosystem?",
+        options: ["Stablecoin", "Governance and utility token", "NFT asset", "Liquidity pair"],
+        correct: 1
+    },
+    {
+        question: "Which protocol powers Bulk Trade's decentralized data layer?",
+        options: ["Filecoin", "IPFS", "Arweave", "Sia"],
+        correct: 2
+    },
+    {
+        question: "What type of AI does Bulk Trade integrate into its documentation platform?",
+        options: ["Generative AI for writing docs", "Image recognition AI", "Chatbot AI", "Prediction AI"],
+        correct: 0
+    },
+    {
+        question: "Who can use Bulk Trade’s AlphaDocs feature?",
+        options: ["Only enterprise users", "Developers and API creators", "Only verified partners", "Government agencies"],
+        correct: 1
+    },
+    {
+        question: "What is the purpose of the Bulk SDK?",
+        options: ["To create decentralized frontends", "To manage payments", "To help integrate APIs into apps easily", "To deploy smart contracts"],
+        correct: 2
+    },
+    {
+        question: "What makes Bulk Trade unique compared to other marketplaces?",
+        options: ["Centralized control", "AI-based automation and Web3 integration", "Only supports fiat payments", "Uses private databases"],
+        correct: 1
+    },
+    {
+        question: "What is the main benefit of using AlphaDocs AI?",
+        options: ["Manual content writing", "Fast, automated, high-quality documentation", "Expensive custom solutions", "Closed-source tools"],
+        correct: 1
+    }
+];
+
+let currentQuestion = 0;
+let score = 0;
+let selectedOption = -1;
+
+function startQuiz() {
+    document.getElementById('start-screen').classList.remove('active');
+    document.getElementById('quiz-screen').classList.add('active');
+    document.getElementById('total-questions').textContent = quizData.length;
+    loadQuestion();
+}
+
+function loadQuestion() {
+    if (currentQuestion >= quizData.length) return showResults();
+
+    const question = quizData[currentQuestion];
+    document.getElementById('current-question').textContent = currentQuestion + 1;
+    document.getElementById('question-text').textContent = question.question;
+
+    const optionsContainer = document.getElementById('options-container');
+    optionsContainer.innerHTML = '';
+    question.options.forEach((option, i) => {
+        const opt = document.createElement('div');
+        opt.className = 'option';
+        opt.textContent = option;
+        opt.onclick = () => selectOption(i);
+        optionsContainer.appendChild(opt);
+    });
+
+    document.getElementById('next-btn').disabled = true;
+    document.getElementById('feedback').style.display = 'none';
+    document.getElementById('progress-fill').style.width = (currentQuestion / quizData.length) * 100 + '%';
+}
+
+function selectOption(index) {
+    if (selectedOption !== -1) return;
+    selectedOption = index;
+
+    const options = document.querySelectorAll('.option');
+    const question = quizData[currentQuestion];
+
+    options.forEach((option, i) => {
+        if (i === question.correct) option.classList.add('correct');
+        else if (i === index && i !== question.correct) option.classList.add('incorrect');
+        option.style.pointerEvents = 'none';
+    });
+
+    const feedback = document.getElementById('feedback');
+    if (index === question.correct) {
+        score++;
+        feedback.textContent = "✅ Correct!";
+        feedback.className = "feedback correct";
+    } else {
+        feedback.textContent = ❌ Incorrect. Correct answer: ${question.options[question.correct]};
+        feedback.className = "feedback incorrect";
+    }
+
+    feedback.style.display = 'block';
+    document.getElementById('next-btn').disabled = false;
+}
+
+function nextQuestion() {
+    currentQuestion++;
+    selectedOption = -1;
+    loadQuestion();
+}
+
+function showResults() {
+    document.getElementById('quiz-screen').classList.remove('active');
+    document.getElementById('results-screen').classList.add('active');
+
+    const percent = Math.round((score / quizData.length) * 100);
+    const circle = document.getElementById('score-circle');
+    document.getElementById('score-percentage').textContent = percent + "%";
+    document.getElementById('correct-count').textContent = score;
+    document.getElementById('incorrect-count').textContent = quizData.length - score;
+    document.getElementById('total-count').textContent = quizData.length;
+
+    let message = "";
+    if (percent >= 80) { circle.className = "score-circle excellent"; message = "🏆 Excellent!"; }
+    else if (percent >= 60) { circle.className = "score-circle good"; message = "👏 Great job!"; }
+    else if (percent >= 40) { circle.className = "score-circle average"; message = "👍 Keep learning!"; }
+    else { circle.className = "score-circle poor"; message = "💪 Try again!"; }
+
+    document.getElementById('results-message').textContent = message;
+}
+
+function restartQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    selectedOption = -1;
+    document.getElementById('results-screen').classList.remove('active');
+    document.getElementById('start-screen').classList.add('active');
+}
+</script>
+</body>
+</html>
